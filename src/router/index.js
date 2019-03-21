@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '@/components/pages/index'
+import Error from '@/components/pages/error'
 import Login from '@/components/pages/login'
 import Register from '@/components/pages/register'
 import GoodsDetail from '@/components/pages/goodsDetail'
@@ -10,7 +11,13 @@ import ConfirmOrder from '@/components/pages/confirmOrder'
 Vue.use(Router)
 
 export default new Router({
+  mode: 'history',
   routes: [
+    {
+      path: '/',
+      name: 'index',
+      component: Index
+    },
     {
       path: '/index',
       name: 'index',
@@ -46,6 +53,10 @@ export default new Router({
       path: '/confirmOrder',
       name: 'confirmOrder',
       component: ConfirmOrder
+    },
+    {
+      path: '*',
+      component: Error
     }
   ]
 })

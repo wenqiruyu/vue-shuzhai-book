@@ -26,8 +26,8 @@ Vue.prototype.setCookie=function(cname, cvalue, exdays) {
   　　this.setCookie("username", "", -1);
   }*/
 
-  /*用export把方法暴露出来*/
-  // cookie的使用  设置cookie
+/*用export把方法暴露出来*/
+// cookie的使用  设置cookie
 export function setCookie(cname, cvalue, exdays) {
     var date = new Date();
     //设置exdays天时效 
@@ -38,7 +38,7 @@ export function setCookie(cname, cvalue, exdays) {
     console.info(document.cookie);
 }
   
-  //  获取cookie
+//  获取cookie
 export function getCookie(cname) {
     　　var name = cname + "=";
     　　var ca = document.cookie.split(";");

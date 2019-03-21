@@ -263,7 +263,7 @@
             _this.user.id = getCookie('userId')
             _this.user.name = getCookie('username')
             _this.priceNum = _this.priceNum.toFixed(2)
-            _this.$axios.get('/cart/' + _this.user.id).then((data)=>{
+            _this.$axios.get('/cart-server/cart/' + _this.user.id).then((data)=>{
                 var data = data.data
                 // 判断是否返回错误
                 if(data.status == 0){

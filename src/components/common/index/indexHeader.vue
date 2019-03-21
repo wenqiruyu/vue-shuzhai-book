@@ -56,7 +56,7 @@
             var username = getCookie('username')
             _this.name = username
             if(!(userId == '' || userId == null)){
-                this.$axios.get('/getUserCartNum/' + userId).then((data)=>{
+                this.$axios.get('/cart-server/cart/sum/' + userId).then((data)=>{
                     _this.num = data.data.data
                 })
             }

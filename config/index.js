@@ -12,7 +12,7 @@ module.exports = {
     // 路由接口代理 解决跨域问题
     proxyTable: {
       '/api': {
-        target: 'http://localhost:10000',
+        target: 'http://localhost:9996',
         changeOrigin: true,
         pathRewrite: {
             '^/api': ''

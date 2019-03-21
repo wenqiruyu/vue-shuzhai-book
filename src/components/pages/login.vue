@@ -102,7 +102,7 @@
             login(name){
                 this.$refs[name].validate((valid) => {
                     if (valid) {
-                        this.$axios.post('/user/login',this.user).then((data) => {
+                        this.$axios.post('/user-server/user',this.user).then((data) => {
                             var status = data.data.status
                                 if(status == 1) {
                                     var username = this.user.username

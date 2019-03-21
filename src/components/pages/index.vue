@@ -232,7 +232,7 @@
             // 获取用户登录信息
             _this.user = this.$route.query.user;
             // 侧边导航 分类
-            _this.$axios.get('/getCategory').then((data)=>{
+            _this.$axios.get('/category-server/category').then((data)=>{
                 // 获取图书分类列表
                 var category = data.data;
                 // 数组类型
@@ -266,7 +266,7 @@
                 _this.allNav = hasChild;
             })
             // 获得热卖商品
-            _this.$axios.get('/getAllProduct').then((data)=>{
+            _this.$axios.get('/product-server/product').then((data)=>{
                 var book = data.data;
                 _this.hotBooks = book.data;
             })

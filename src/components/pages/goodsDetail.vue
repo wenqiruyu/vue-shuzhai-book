@@ -223,7 +223,7 @@
             toCart(bookId){
                 var _this = this;
                 console.log(bookId);
-                this.$axios.get('/addCart',{
+                this.$axios.put('/cart-server/cart',{
                     params:{
                         userId:_this.user.id,
                         bookId:bookId
@@ -253,11 +253,7 @@
             // 获取图书id
             var bookId = this.$route.query.bookId
             // 根据图书id查询图书详情
-            _this.$axios.get('getBookById',{
-                params:{
-                    bookId: bookId
-                }
-            }).then((data)=>{
+            _this.$axios.get('/product-server/product/' + bookId).then((data)=>{
                 _this.book = data.data.data
                 _this.book.status = 4
                 _this.book_subImg = _this.book.subImg.split(',')

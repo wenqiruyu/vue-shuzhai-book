@@ -128,11 +128,8 @@
             // 获取分类id   
             var categoryId = this.$route.query.categoryId;
             // 根据分类id查找商品
-            _this.$axios.get('/getBooksByCategory',{
-                params:{
-                    categoryId:categoryId
-                }
-            }).then((data)=>{
+            _this.$axios.get('/product-server/product/category/' + categoryId
+            ).then((data)=>{
                 var books = data.data;
                 // 数组拷贝
                 _this.books = books.data.slice();
@@ -156,15 +153,14 @@
             // 加如购物车
             toCart(bookId){
                 var _this = this;
-                console.log(bookId);
-                this.$axios.get('/addCart',{
-                    params:{
+                console.log(_this.user.id)
+                this.$axios.put('/cart-server/cart',{
                         userId:_this.user.id,
                         bookId:bookId,
                         // 添加购物车本数
                         bookNum:1
                     }
-                }).then((data)=>{
+                ).then((data)=>{
                     var data = data.data;
                     if(data.status == 1){
                         this.$Notice.success({

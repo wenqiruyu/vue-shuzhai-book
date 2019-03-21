@@ -6,15 +6,17 @@ import router from './router'
 import iView from 'iview' // 引入iview依赖
 import 'iview/dist/styles/iview.css' // 引入iview css样式
 import axios from 'axios'
+// import restful from './assets/js/restful'
 import echarts from 'echarts'// 引入echarts
 // import qs from 'qs'// 实现CORS 解决跨域
 
 Vue.use(iView);
 
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8';
-axios.defaults.baseURL = 'http://localhost:10000'
+axios.defaults.baseURL = 'http://localhost:9996'
 // 将API方法绑定到全局
 Vue.prototype.$axios = axios
+// Vue.prototype.$restful = restful
 // 引入echarts
 Vue.prototype.$echarts = echarts
 // Vue.prototype.$qs = qs

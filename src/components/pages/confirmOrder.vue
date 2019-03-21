@@ -235,7 +235,7 @@
             _this.user.name = getCookie('username')
             var product = _this.$route.query.product
             if(product == null){
-                // 由此判定该页面跳转不是使用购物车进行跳转过来的，是通过直接购买按钮来的
+                // 由此判定该页面跳转不是使用购物车进行跳转过来的，是通过直接购买按钮来的，直接购买需要对用户进行是否登录拦截
                 var bookDeail = _this.$route.query.bookDeail
                 console.log(JSON.parse(bookDeail))
                 _this.userCart.push(JSON.parse(bookDeail))
@@ -252,7 +252,7 @@
                 _this.sumProduct = _this.sumProduct.toFixed(2)
                 console.log(_this.userCart)
             }
-            _this.$axios.get('/address/' +  _this.user.id).then((data)=>{
+            _this.$axios.get('/user-server/user/address/' +  _this.user.id).then((data)=>{
                 console.log(data.data.data)
                 _this.address = data.data.data
                 // 获得默认地址
