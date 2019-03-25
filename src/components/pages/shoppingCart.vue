@@ -75,7 +75,7 @@
                     <div class="content-book-table">
                         <Table v-if="userCart.length < 3" ref="selection" :columns="columns" :data="userCart" @on-selection-change="selectRow">
                             <template slot-scope="{ row, index }" slot="action">
-                                <Button @click="remindDel = true">删除</Button>
+                                <Button @click="remindDel = true,removeIndex = index">删除</Button>
                                 <Modal v-model="remindDel" width="360">
                                     <p slot="header" style="color:#f60;text-align:center">
                                         <Icon type="ios-information-circle"></Icon>
@@ -85,7 +85,7 @@
                                         <p>您确定要删除该商品吗？</p>
                                     </div>
                                     <div slot="footer">
-                                        <Button size="large" type="error" @click="remove(index)">确定</Button>
+                                        <Button size="large" type="error" @click="remove">确定</Button>
                                         <Button size="large" @click="back">返回</Button>
                                     </div>
                                 </Modal>
@@ -93,7 +93,7 @@
                         </Table>
                         <Table v-else height="402" ref="selection" :columns="columns" :data="userCart" @on-selection-change="selectRow">
                             <template slot-scope="{ row, index }" slot="action">
-                                <Button @click="remindDel = true">删除</Button>
+                                <Button @click="remindDel = true,removeIndex = index">删除</Button>
                                 <Modal v-model="remindDel" width="360">
                                     <p slot="header" style="color:#f60;text-align:center">
                                         <Icon type="ios-information-circle"></Icon>
@@ -103,7 +103,7 @@
                                         <p>您确定要删除该商品吗？</p>
                                     </div>
                                     <div slot="footer">
-                                        <Button size="large" type="error" @click="remove(index)">确定</Button>
+                                        <Button size="large" type="error" @click="remove">确定</Button>
                                         <Button size="large" @click="back">返回</Button>
                                     </div>
                                 </Modal>
@@ -248,6 +248,8 @@
                 priceNum: 0,
                 // 删除
                 remindDel: false,
+                // 删除的索引
+                removeIndex: -1,
                 // 批量删除
                 remindAllDel:false
             }
@@ -263,7 +265,8 @@
             _this.user.id = getCookie('userId')
             _this.user.name = getCookie('username')
             _this.priceNum = _this.priceNum.toFixed(2)
-            _this.$axios.get('/cart-server/cart/' + _this.user.id).then((data)=>{
+            if(_this.user.id != null && _this.user.id != ''){
+                _this.$axios.get('/cart-server/cart/' + _this.user.id).then((data)=>{
                 var data = data.data
                 // 判断是否返回错误
                 if(data.status == 0){
@@ -276,20 +279,43 @@
                     _this.userCart = data.data
                 }
             })
+            }
         },
         methods:{
+            // 比较函数
+            sortNumbers(a,b){
+                return b-a;
+            },
+            // 数组降序
+            sortArray(arr){
+                return arr.sort(this.sortNumbers);
+            },
             // 点击图标跳转主页 后期考虑cookie是否需要传用户信息
             toIndex(){
                 this.$router.push({path: '/index'});
             },
-            remove(item){
+            remove(){
                 // 用户删除，进行友好提示
                 this.remindDel = false
+                var item = this.removeIndex
+                var id = this.userCart[item].id
                 // 用户删除，进行对后台的更新
-                this.$axios.get('').then((data)=>{
-
+                this.$axios.delete('/cart-server/cart/' + id).then((data)=>{
+                    var data = data.data
+                    if(data.status = 1){
+                        // 成功删除，进行对购物车数据进行更新
+                        this.$Notice.success({
+                            title: '提示',
+                            desc: data.msg
+                        })
+                        this.userCart.splice(item,1)
+                    }else{
+                        this.$Notice.error({
+                            title: '提示',
+                            desc: data.msg
+                        })
+                    }
                 })
-                console.log(item)
             },
             isShowAllRemove(){
                 // 用户进行批量删除操作,进行提示
@@ -307,15 +333,48 @@
             allRemove(){
                 this.remindAllDel = false
                 var arr = this.$refs.selection.getSelection()
-                var idArr = new Array()
-                // 根据id进行批量删除
-                for(var i = 0, len = arr.length; i < len; i++){
-                    idArr.push(arr[i].id)
+                var idArr = ''
+                for(var i = 0,len = arr.length; i < len; i++){
+                    if(i == len -1){
+                        idArr += arr[i].id
+                    }else{
+                        idArr += arr[i].id + ',' 
+                    }
                 }
-                console.log(idArr)
                 // 将id数组进行给后台
-                this.$axios.get('').then((data)=>{
-                    
+                this.$axios.delete('/cart-server/cart',{
+                    params:{
+                        allId:idArr
+                    }
+                }).then((data)=>{
+                    var data = data.data
+                    // 删除成功
+                    if(data.status = 1){
+                        // 根据id进行批量删除
+                        var removeAllIndex = []
+                        for(var i = 0, len = arr.length; i < len; i++){
+                            // 将购物车id和userCart的id进行比对，确定勾选的索引
+                            for(var j = 0, item = this.userCart.length; j < item; j++){
+                                if(arr[i].id == this.userCart[j].id){
+                                    removeAllIndex.push(j)
+                                }
+                            }
+                        }
+                        this.sortArray(removeAllIndex)
+                        // 将勾选的购物车进行删除
+                        for(var k = 0,ind = removeAllIndex.length;k < ind;k++){
+                            this.userCart.splice(removeAllIndex[k],1)
+                        }
+                        this.$Notice.success({
+                            title: '提示',
+                            desc: data.msg
+                        })
+                    }else{
+                        this.$Notice.error({
+                            title: '提示',
+                            desc: data.msg
+                        })
+                    }
                 })
             },
             // 结算
@@ -347,12 +406,22 @@
                 this.priceNum = this.priceNum.toFixed(2)
             },
             updateQuantity(item, value){
+                var chooseCart = this.userCart[item]
                 // 用户对书本数量进行了更新，需要对后台数据库进行更新
-                this.$axios.get('').then((data)=>{
-
+                this.$axios.put('/cart-server/cart',{
+                    id: chooseCart.id,
+                    quantity: value
+                }).then((data)=>{
+                    var data = data.data
+                    if(data.status == 0){
+                        // 进行错误提示
+                        this.$Notice.error({
+                            title: '提示',
+                            desc: data.msg
+                        });
+                    }
                 })
                 this.userCart[item].quantity = value
-                console.info(this.userCart)
             },
             back(){
                 this.remindDel = false

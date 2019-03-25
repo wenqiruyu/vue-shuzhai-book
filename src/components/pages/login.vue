@@ -43,7 +43,7 @@
                         <div class="login-remember-forget">
                             <div class="login-form-remember">
                                 <Checkbox v-model="single">
-                                    <span v-if="single == false">七天内自动登录</span>
+                                    <span v-if="single == false">三天内自动登录</span>
                                     <span v-if="single == true">请勿在公用电脑上勾选此选项</span>
                                 </Checkbox>
                             </div>
@@ -58,7 +58,7 @@
                         </div>
                         <!-- 注册账号 -->
                         <div class="login-form-register">
-                            <a href=""><span>注册账号</span></a>
+                            <a href="/register"><span>注册账号</span></a>
                         </div>
                     </Form>
                 </div>
@@ -73,7 +73,7 @@
 <script>
     import LoginHeader from "../common/login/loginHeader";
     import LoginFooter from "../common/login/loginFooter";
-    import {setCookie} from '../../assets/js/cookie.js'
+    import {setCookie, clearCookie} from '../../assets/js/cookie.js'
     export default {
         components:{
             LoginHeader,
@@ -83,6 +83,7 @@
             return {
                 remind: '',
                 single: false,
+                formInline: true,
                 user: {
                     username: '',
                     password: ''
@@ -102,14 +103,21 @@
             login(name){
                 this.$refs[name].validate((valid) => {
                     if (valid) {
-                        this.$axios.post('/user-server/user',this.user).then((data) => {
+                        this.$axios.post('/user-server/user/login',this.user).then((data) => {
                             var status = data.data.status
                                 if(status == 1) {
                                     var username = this.user.username
                                     var userId = data.data.data.id
                                     // 登录成功，存储cookie 设置三天时效
-                                    setCookie("username",username,3)
-                                    setCookie("userId",userId,3)
+                                    if(this.single){
+                                        setCookie("username",username,3)
+                                        setCookie("userId",userId,3)
+                                    }else{
+                                        clearCookie("username")
+                                        clearCookie("userId")
+                                    }
+                                    // 用于在路由守卫上使用
+                                    localStorage.setItem("islogin", JSON.stringify(this.formInline));
                                     //路由跳转到首页
                                     this.$router.push({path:'/index'});
                                 } else {

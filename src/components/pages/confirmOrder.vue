@@ -230,6 +230,7 @@
         },
         created(){
             var _this = this;
+            _this.address = []
             // 获取用户cookie
             _this.user.id = getCookie('userId')
             _this.user.name = getCookie('username')
@@ -237,10 +238,10 @@
             if(product == null){
                 // 由此判定该页面跳转不是使用购物车进行跳转过来的，是通过直接购买按钮来的，直接购买需要对用户进行是否登录拦截
                 var bookDeail = _this.$route.query.bookDeail
-                console.log(JSON.parse(bookDeail))
-                _this.userCart.push(JSON.parse(bookDeail))
-                console.log(_this.userCart[0].price)
-                _this.sumProduct = _this.userCart[0].price.toFixed(2)
+                // 对直接购买数据进行封装成json
+                var product = {"product" : JSON.parse(bookDeail)}
+                _this.userCart.push(product)
+                _this.sumProduct = _this.userCart[0].product.price.toFixed(2)
             }else{
                 // 获取购物车页面传递的数据
                 _this.userCart = JSON.parse(product)
@@ -250,11 +251,10 @@
                     _this.sumProduct += _this.userCart[i].quantity*_this.userCart[i].product.price
                 }
                 _this.sumProduct = _this.sumProduct.toFixed(2)
-                console.log(_this.userCart)
             }
             _this.$axios.get('/user-server/user/address/' +  _this.user.id).then((data)=>{
-                console.log(data.data.data)
-                _this.address = data.data.data
+                var address = data.data
+                _this.address = address.data.slice()
                 // 获得默认地址
                 let len = _this.address.length
                 for(var i = 0; i < len; i++){
@@ -356,12 +356,10 @@
         height: 150px;
     }
     .order-address-card{
-        margin-left: 20px;
         float: left;
         margin-top: 15px;
-        margin-right: 30px;
-        margin-left: 30px;
-        width:440px;
+        margin-left: 40px;
+        width:360px;
     }
     .order-show-card{
         float: left;

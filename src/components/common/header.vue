@@ -9,8 +9,8 @@
             <!-- 考虑使用登录拦截，未登录才有会员登录，注册，登录的用户给显示成注销功能 -->
             <div id="header-breadcrumb" class="header">
                 <Breadcrumb>
-                    <BreadcrumbItem  v-if="username == null || username == ''" to="/login">
-                        <span style="color:red;">会员登录</span>
+                    <BreadcrumbItem  v-if="username == null || username == ''">
+                        <a href="/login"><span style="color:red;">会员登录</span></a>
                     </BreadcrumbItem>
                     <BreadcrumbItem v-else><a @click="remindExit = true" style="color:red;">注销账号</a></BreadcrumbItem>
                     <Modal v-model="remindExit" width="360">

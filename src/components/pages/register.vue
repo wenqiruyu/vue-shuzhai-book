@@ -7,9 +7,11 @@
             <div class="register-title">
                 <p>新用户注册</p>
             </div>
+            <div class="register-toLogin">
+                已有账号？<a href="/login">请登录></a>
+            </div>
             <!-- 错误信息提示位置 -->
             <div class="register-remind">
-                <p>错误信息提示位置</p>
                 <p>{{ remindMsg }}</p>
             </div>
             <!-- 注册表单位置 -->
@@ -25,9 +27,10 @@
                     </div>
                     <div>
                         <FormItem prop="password">
-                            <Input type="password" size="large" v-model="user.password" placeholder="请输入密码" clearable>
+                            <Input v-bind:type="pwdType" size="large" v-model="user.password" placeholder="请输入密码">
                                 <Icon type="ios-lock-outline" slot="prefix"></Icon>
-                                <Icon type="ios-eye-off" slot="suffix"/>
+                                <Icon v-if="showPwd" type="md-eye" slot="suffix" @click="showPassword"/>
+                                <Icon v-else type="md-eye-off" slot="suffix" @click="showPassword"/>
                             </Input>
                         </FormItem>
                     </div>
@@ -55,9 +58,14 @@
                             </Row>
                         </FormItem>
                     </div>
-                    <div>
+                    <div class="register-from-checkbox">
+                        <Checkbox v-model="single">
+                            <span>我已阅读并同意<a href="">《书斋交易条款》</a>和<a href="">《书斋社区条款》</a></span>
+                        </Checkbox>
+                    </div>
+                    <div class="register-from-button">
                         <FormItem>
-                            <Button type="primary" size="large" @click="handleSubmit('user')" long>注册</Button>
+                            <Button type="primary" size="large" @click="handleSubmit('user')" long v-bind:disabled="!single">注册</Button>
                         </FormItem>
                     </div>
                 </Form>
@@ -82,9 +90,11 @@
             const validateUser = (rule, value, callback) => {
                 if (value === '') {
                     callback(new Error('用户名不能为空'));
-                } else {
+                } else if(this.remindName){
+                    this.remindName = false
+                    callback(new Error('用户名已经存在'));
+                }else{
                     // 通过给标签添加ref，得以获取该标签
-                    console.log(this.sty);
                     callback();
                 }
             };
@@ -93,7 +103,6 @@
                     callback(new Error('密码不能为空'));
                 } else {
                     // 通过给标签添加ref，得以获取该标签
-                    console.log(this.sty);
                     callback();
                 }
             };
@@ -104,33 +113,42 @@
                     callback(new Error('请输入正确手机号'));
                 } else {
                     // 通过给标签添加ref，得以获取该标签
-                    console.log(this.sty);
-                    this.sty=false;
+                    this.sty=false
                     callback();
                 }
             };
             const validateVerify = (rule, value, callback) => {
-                if (this.isShowVerify) {
-                    this.isShowVerify = false;
-                    callback(new Error(remindMsg));
+                if (this.remindVerify) {
+                    this.remindVerify = false
+                    callback(new Error('该手机号已经注册过啦'))
+                }else if(this.sendSuccess){
+                    this.sendSuccess = false
+                    callback(new Error('验证短信发送成功，请查收'))
                 } else if (!regPhone.test(this.user.phone)) {
-                    callback(new Error('请输入正确手机号'));
-                } else if (value = '') {
-                    callback(new Error('验证码不能为空'));
+                    callback(new Error('请输入正确手机号'))
+                } else if (value === '') {
+                    callback(new Error('验证码不能为空'))
                 }else {
                     // 通过给标签添加ref，得以获取该标签
-                    console.log(this.sty);
-                    this.sty=false;
-                    callback();
+                    this.sty=false
+                    callback()
                 }
             };
             return{
-                // isShow:false,
-                sty:true,
+                // 条款勾选
+                single: true,
+                // 验证用户名是否已经存在
+                remindName: false,
+                // 验证发送验证码
+                remindVerify: false,
+                // 验证码发送成功
+                sendSuccess: false,
                 // 验证码手机号提示信息
-                remindMsg:'',
-                // 用于验证码的判断
-                isShowVerify: false,
+                remindMsg: '',
+                // 显示密码
+                showPwd: false,
+                pwdType: 'password',
+                sty: true,
                 user:{
                     username:'',
                     password:'',
@@ -158,48 +176,69 @@
             } 
         },
         methods: {
+            showPassword(){
+                if(this.showPwd){
+                    this.showPwd = false
+                    this.pwdType = 'password'
+                }else{
+                    this.showPwd = true
+                    this.pwdType = 'text'
+                }
+            },
             getVerify(){
-                this.$axios.get('/user/sendSms',{
+                this.$axios.get('/user-server/user/sms',{
                     params : { 
                         //请求参数
-                        number:this.user.phone
+                        phone:this.user.phone
                     }
-                }).then((response)=>{
-                    var data = response.data;
-                    var status = data.status;
+                }).then((data)=>{
+                    var data = data.data
                     // 后台状态码 8 为号码已经注册过了，1成功。0失败
-                if(status === 8){
-                    alert(status);
-                    // 显示验证码提示
-                    this.isShowVerify = true;
-                    this.remindMsg='* ' + data.msg;
-                    // 绑定ref
-                    this.$refs.ruleForm2.validateField('user');
-                }else if(status === 0){
-                    alert(status);
-                    // 显示验证码提示
-                    this.isShowVerify = true;
-                    this.remindMsg='* ' + data.msg;
-                    // 绑定ref
+                    if(data.status === 8){
+                        this.remindVerify = true
+                        this.$refs.user.validateField('verify')
+                    }else if(data.status === 1){
+                        // 显示验证码提示
+                        this.sendSuccess = true
+                        this.$refs.user.validateField('verify')
+                    }else{
+                        this.remindMsg='* ' + data.msg
                     }
                 })
             },
             handleSubmit(name){
                 this.$refs[name].validate((valid) => {
                     if (valid) {
-                        this.$axios.post('/user/register',this.user).then((response) => {
-                            var status = response.data;
-                                if(status === 'success') {
-                                    //路由跳转
-                                    this.$router.push('/');
-                                } else {
-                                    alert(response.data);
-                                }
-                            }).catch((error) => {
-                                console.log(response);
+                        // 验证用户名是否存在
+                        this.$axios.get('/user-server/user/register',{
+                            params:{
+                                username: this.user.username
+                            }
+                        }).then((data)=>{
+                            var data  = data.data
+                            if(data.status == 1){
+                                this.$axios.post('/user-server/user/register',{
+                                    name: this.user.username,
+                                    password: this.user.password,
+                                    phone: this.user.phone,
+                                    verify: this.user.verify
+                                }).then((data) => {
+                                    var data = data.data
+                                        if(data.status === 1) {
+                                            //路由跳转
+                                            this.$router.push('/login')
+                                        } else {
+                                            this.remindMsg='* ' + data.msg
+                                        }
+                                    }).catch((error) => {
+                                        this.remindMsg = '系统错误，请稍后再试'
+                                })
+                            }else{
+                                this.remindName = true
+                                this.$refs.user.validateField('username')
+                            }
                         })
-                    }else{
-
+                        
                     }
                 })
             }
@@ -213,7 +252,7 @@
         margin-left: 30px;
         margin-right: 30px;
         height: 550px;
-        background-image: url('/static/img/register/register-img-1.jpg');
+        background-image: url('/static/img/register/backimg.jpg');
         outline: 4px solid #F9F9F9;
     }
     /* 标题 */
@@ -224,26 +263,36 @@
         color: #8A8A8A;
         font-size: 18px;
     }
+    .register-toLogin{
+        float: left;
+        margin-top: 30px;
+        margin-left: 1000px;
+        color: #8A8A8A;
+        font-size: 16px;
+    }
     /* 错误信息提示位置 */
     .register-remind{
         width: 200px;
         height: 20px;
         float:left;
-        margin-left: 450px;
-        margin-top: 80px;
-        outline: 4px solid #000000;
+        color: red;
+        text-align: left;
+        margin-left: 415px;
+        margin-top: 30px;
     }
     .register-form{
-        width:300px;
+        width:320px;
         float:left;
         margin-left:560px;
-        margin-top:30px;
+        margin-top:10px;
     }
-
+    .register-from-checkbox{
+        float: left;
+        margin-bottom: 20px;
+    }
     Input{
         height:50px;
     }
-
     .register-footer{
         float:left;
     }

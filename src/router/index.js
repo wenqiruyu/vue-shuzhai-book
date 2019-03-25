@@ -51,6 +51,8 @@ export default new Router({
     // 订单页需要用户登录才能进入，设置拦截
     {
       path: '/confirmOrder',
+      // 开启路由守卫
+      meta: { requireAuth: true },
       name: 'confirmOrder',
       component: ConfirmOrder
     },

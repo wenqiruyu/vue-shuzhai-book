@@ -150,30 +150,34 @@
             hideBack(index){
                 this.isActive = -1
             },
-            // 加如购物车
+            // 加入购物车
             toCart(bookId){
                 var _this = this;
-                console.log(_this.user.id)
-                this.$axios.put('/cart-server/cart',{
+                // 判断用户cookie是否存在，不存在跳转登录页面
+                if(_this.user.id == '' || _this.user.id == null || _this.user.name == '' || _this.user.name == null){
+                    this.$router.push({path:'/login'});
+                }else{
+                    this.$axios.post('/cart-server/cart',{
                         userId:_this.user.id,
                         bookId:bookId,
                         // 添加购物车本数
                         bookNum:1
-                    }
-                ).then((data)=>{
-                    var data = data.data;
-                    if(data.status == 1){
-                        this.$Notice.success({
-                            title: '提示',
-                            desc: data.data
-                        });
-                    }else{
-                        this.$Notice.error({
-                            title: '提示',
-                            desc: data.msg
-                        });
-                    }
-                })
+                    }).then((data)=>{
+                        var data = data.data
+                        if(data.status == 1){
+                            // 进行购物车数更新
+                            this.$Notice.success({
+                                title: '提示',
+                                desc: data.msg
+                            });
+                        }else{
+                            this.$Notice.error({
+                                title: '提示',
+                                desc: data.msg
+                            });
+                        }
+                    })
+                }
             },
             // 点击立即购买
             clickPay(id){

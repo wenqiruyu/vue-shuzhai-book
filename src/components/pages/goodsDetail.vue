@@ -163,6 +163,7 @@
 </template>
 
 <script>
+    import {setCookie,getCookie,clearCookie} from '../../assets/js/cookie.js'
     import CommonHeader from '../common/header'
     import CommonFooter from '../common/footer'
     import IndexHeader from '../common/index/indexHeader'
@@ -206,6 +207,7 @@
                     thumbnail: null,
                     subtitle: null,
                 },
+                user:{'id':null,'name':null},
                 isActive: 0,
                 book_subImg: [],
                 book_thumbnail: [],
@@ -222,34 +224,35 @@
             // 加入购物车
             toCart(bookId){
                 var _this = this;
-                console.log(bookId);
-                this.$axios.put('/cart-server/cart',{
-                    params:{
-                        userId:_this.user.id,
-                        bookId:bookId
-                    }
+                this.$axios.post('/cart-server/cart',{
+                    userId:_this.user.id,
+                    bookId:bookId,
+                    bookNum:_this.buyNum
                 }).then((data)=>{
-                    var data = data.data;
+                    var data = data.data
                     if(data.status == 1){
                         this.$Notice.success({
                             title: '提示',
-                            desc: data.data
+                            desc: data.msg
                         });
                     }else{
                         this.$Notice.error({
                             title: '提示',
-                            desc: data.data
+                            desc: data.msg
                         });
                     }
                 })
             },
             // 点击立即购买
             clickPay(id){
-                this.$router.push({path: '/confirmOrder', query: { bookId: id }});
+                this.$router.push({path: '/confirmOrder', query: { bookDeail: JSON.stringify(this.book) }})
             }
         },
         created(){
             var _this = this
+            // 获取用户cookie
+            _this.user.id = getCookie('userId')
+            _this.user.name = getCookie('username')
             // 获取图书id
             var bookId = this.$route.query.bookId
             // 根据图书id查询图书详情

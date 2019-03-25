@@ -31,4 +31,28 @@ new Vue({
   template: '<App/>'
 })
 
+// 添加路由守卫
+router.beforeEach((to, from, next) => {
+  if (to.meta.requireAuth) {
+    if (JSON.parse(localStorage.getItem("islogin"))) {
+      console.log("islogin")
+      next();
+    } else if(localStorage.getItem("islogin") == null){
+      next({
+        path: "/login"//指向为你的登录界面
+      });
+    }
+  } else {
+    next();
+  }
 
+  if (to.fullPath === "/login") {
+    if (JSON.parse(localStorage.getItem("islogin"))) {
+      next({
+        path: from.fullPath
+      });
+    } else {
+      next();
+    }
+  }
+});
