@@ -13,7 +13,7 @@
                         <a href="/login"><span style="color:red;">会员登录</span></a>
                     </BreadcrumbItem>
                     <BreadcrumbItem v-else><a @click="remindExit = true" style="color:red;">注销账号</a></BreadcrumbItem>
-                    <Modal v-model="remindExit" width="360">
+                    <Modal v-model="remindExit" width="360" @on-ok="exit" @on-cancel="back">
                         <p slot="header" style="color:#f60;text-align:center">
                             <Icon type="ios-information-circle"></Icon>
                             <span>注销账号</span>
@@ -21,13 +21,11 @@
                         <div style="text-align:center">
                             <p>您确定退出登录更换账号吗？</p>
                         </div>
-                        <div slot="footer">
-                            <Button size="large" type="error" @click="exit">确定</Button>
-                            <Button size="large" @click="back">返回</Button>
-                        </div>
                     </Modal>
                     <BreadcrumbItem to="/register">会员注册</BreadcrumbItem>
-                    <BreadcrumbItem to="/info">我的信息</BreadcrumbItem>
+                    <BreadcrumbItem>
+                        <a  v-on:click="toInfo">我的信息</a>
+                    </BreadcrumbItem>
                     <BreadcrumbItem></BreadcrumbItem>
                 </Breadcrumb>
             </div>
@@ -41,6 +39,7 @@
         data(){
             return{
                 // 需要和父模块获取相对应的用户名，进行欢迎提示
+                id: null,
                 username: null,
                 remindExit: false,
                 modal_loading: false
@@ -48,16 +47,19 @@
         },
         created(){
             // 获取cookie
-            var _username = getCookie("username")
-            this.username = _username
+            this.username = getCookie("username")
+            this.id = getCookie("userId")
         },
         methods:{
+            toInfo(){
+                this.$router.push({ path: '/info' })
+            },
             exit(){
                 // 删除cookie
                 clearCookie("username")
                 clearCookie("userId")
                 // 路由跳转登录页面
-                this.$router.push({path: '/login'});
+                this.$router.push('logIn')
             },
             back(){
                 this.remindExit = false

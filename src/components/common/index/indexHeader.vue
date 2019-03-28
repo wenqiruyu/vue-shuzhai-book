@@ -29,7 +29,7 @@
         <div class="page-header-car">
             <Button v-if="name == null || name == ''" type="primary" icon="ios-cart-outline" to="/shoppingCart">购物车</Button>
             <Button v-else type="primary" icon="ios-cart-outline" to="/shoppingCart">购物车( {{num}} )</Button>
-            <Button>我的订单</Button>
+            <Button style="margin-left: 20px;" to="/order">我的订单</Button>
         </div>
     </div>
 </template>
@@ -71,7 +71,7 @@
     }
 </script>
 
-<style>
+<style scoped>
     /* 商标搜索框购物车 */
     .page-header{
         height: 110px;

@@ -126,7 +126,7 @@
             _this.user.id = getCookie('userId')
             _this.user.name = getCookie('username')
             // 获取分类id   
-            var categoryId = this.$route.query.categoryId;
+            var categoryId = this.$route.query.categoryId
             // 根据分类id查找商品
             _this.$axios.get('/product-server/product/category/' + categoryId
             ).then((data)=>{

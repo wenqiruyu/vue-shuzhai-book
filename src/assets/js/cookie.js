@@ -33,9 +33,7 @@ export function setCookie(cname, cvalue, exdays) {
     //设置exdays天时效 
     date.setTime(date.getTime() + exdays * 24 * 60 * 60 * 1000);
     var expires = "expires=" + date.toUTCString();
-    console.info(cname + "=" + cvalue + "; " + expires);
     document.cookie = cname + "=" + cvalue + "; " + expires;
-    console.info(document.cookie);
 }
   
 //  获取cookie

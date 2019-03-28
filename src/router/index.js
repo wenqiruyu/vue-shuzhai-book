@@ -8,6 +8,8 @@ import GoodsDetail from '@/components/pages/goodsDetail'
 import ShoppingCart from '@/components/pages/shoppingCart'
 import Markets from '@/components/pages/markets'
 import ConfirmOrder from '@/components/pages/confirmOrder'
+import Info from '@/components/pages/info'
+import Order from '@/components/pages/order'
 Vue.use(Router)
 
 export default new Router({
@@ -26,6 +28,11 @@ export default new Router({
     {
       path: '/login',
       name: 'login',
+      component: Login
+    },
+    {
+      path: '/login',
+      name: 'logIn',
       component: Login
     },
     {
@@ -55,6 +62,20 @@ export default new Router({
       meta: { requireAuth: true },
       name: 'confirmOrder',
       component: ConfirmOrder
+    },
+    {
+      path: '/order',
+      // 开启路由守卫
+      meta: { requireAuth: true },
+      name: 'order',
+      component: Order
+    },
+    { 
+      path: '/info',
+      // 开启路由守卫
+      meta: { requireAuth: true },
+      name: 'info',
+      component: Info
     },
     {
       path: '*',

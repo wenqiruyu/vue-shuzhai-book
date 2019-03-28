@@ -119,7 +119,7 @@
                                     // 用于在路由守卫上使用
                                     localStorage.setItem("islogin", JSON.stringify(this.formInline));
                                     //路由跳转到首页
-                                    this.$router.push({path:'/index'});
+                                    this.$router.push('index');
                                 } else {
                                     // 提示用户名或密码错误
                                     this.remind = data.data.msg
