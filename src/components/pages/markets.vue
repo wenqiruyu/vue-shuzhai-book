@@ -169,7 +169,7 @@
                             this.$Notice.success({
                                 title: '提示',
                                 desc: data.msg
-                            });
+                            })
                         }else{
                             this.$Notice.error({
                                 title: '提示',

@@ -10,6 +10,7 @@ import Markets from '@/components/pages/markets'
 import ConfirmOrder from '@/components/pages/confirmOrder'
 import Info from '@/components/pages/info'
 import Order from '@/components/pages/order'
+import Text from '@/components/pages/text'
 Vue.use(Router)
 
 export default new Router({
@@ -22,7 +23,7 @@ export default new Router({
     },
     {
       path: '/index',
-      name: 'index',
+      name: 'toIndex',
       component: Index
     },
     {
@@ -32,7 +33,7 @@ export default new Router({
     },
     {
       path: '/login',
-      name: 'logIn',
+      name: 'toLogin',
       component: Login
     },
     {
@@ -80,6 +81,11 @@ export default new Router({
     {
       path: '*',
       component: Error
+    },
+    { 
+      path: '/text',
+      name: 'text',
+      component: Text
     }
   ]
 })

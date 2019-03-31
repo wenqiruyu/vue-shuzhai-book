@@ -86,7 +86,7 @@
             LoginFooter
         },
         data(){
-            var regPhone=/^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\d{8}$/;
+            var regPhone=/^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\d{8}$/
             const validateUser = (rule, value, callback) => {
                 if (value === '') {
                     callback(new Error('用户名不能为空'));
@@ -207,6 +207,7 @@
                 })
             },
             handleSubmit(name){
+                var self =  this
                 this.$refs[name].validate((valid) => {
                     if (valid) {
                         // 验证用户名是否存在
@@ -224,9 +225,11 @@
                                     verify: this.user.verify
                                 }).then((data) => {
                                     var data = data.data
-                                        if(data.status === 1) {
+                                    console.log(data)
+                                        if(data.status == 1) {
+                                            console.log("我要跳走了")
                                             //路由跳转
-                                            this.$router.push('/login')
+                                            self.$router.push('login')
                                         } else {
                                             this.remindMsg='* ' + data.msg
                                         }

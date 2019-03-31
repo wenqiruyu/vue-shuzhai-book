@@ -41,6 +41,10 @@ router.beforeEach((to, from, next) => {
       next({
         path: "/login"//指向为你的登录界面
       });
+    } else{
+      next({
+        path: "/login"//指向为你的登录界面
+      });
     }
   } else {
     next();

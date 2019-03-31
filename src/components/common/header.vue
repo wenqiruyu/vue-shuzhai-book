@@ -42,7 +42,8 @@
                 id: null,
                 username: null,
                 remindExit: false,
-                modal_loading: false
+                modal_loading: false,
+                formInline: false
             }
         },
         created(){
@@ -58,8 +59,9 @@
                 // 删除cookie
                 clearCookie("username")
                 clearCookie("userId")
+                localStorage.setItem("islogin", JSON.stringify(this.formInline))
                 // 路由跳转登录页面
-                this.$router.push('logIn')
+                this.$router.push('login')
             },
             back(){
                 this.remindExit = false

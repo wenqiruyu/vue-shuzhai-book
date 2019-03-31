@@ -6,7 +6,7 @@
         <div class="info-center">
             <!-- 侧边栏 -->
             <div class="info-center-menu">
-                <Menu active-name="my-info" @on-select="menuSelect">
+                <Menu :active-name="activeName" @on-select="menuSelect">
                         <MenuItem name="my-info">
                             <Icon type="md-document" />
                             我的信息
@@ -27,16 +27,16 @@
             </div>
             <div class="info-center-content">
                 <div v-if="selectMenu == 'update-pwd'">
-                    <UpdatePwd :userInfo="user"></UpdatePwd>
+                    <Update :userInfo="userInfo"></Update>
                 </div>
                 <div v-else-if="selectMenu == 'my-address'">
-                    <MyAddress :userAddress="address"></MyAddress>
+                    <MyAddress :userId="userId"></MyAddress>
                 </div>
                 <div v-else-if="selectMenu == 'my-footer'">
-                    <MyFooter :userInfo="user"></MyFooter>
+                    <MyFooter :userInfo="userInfo"></MyFooter>
                 </div>
                 <div v-else>
-                    <MyInfo :userInfo="user"></MyInfo>
+                    <MyInfo :userInfo="userInfo"></MyInfo>
                 </div>
             </div>
 
@@ -53,36 +53,50 @@
     import MyInfo from '../common/info/myInfo'
     import MyAddress from '../common/info/myAddress'
     import MyFooter from '../common/info/myFooter'
-    import UpdatePwd from '../common/info/updatePwd'
+    import Update from '../common/info/update'
     import {setCookie,getCookie,clearCookie} from '../../assets/js/cookie.js'
     export default {
         data(){
             return{
+                activeName: 'my-info',
                 selectMenu: '',
                 userId: null,
-                address: [],
                 isActive: -1,
-                user: {
+                userInfo: {
                     userSex:'',
+                    userPhone: '',
+                    userName: '',
+                    userSignature: '',
+                    user: {}
                 },
             }
         },
         created(){
             var _this = this
+            // 跳转到指定选项
+            var chooseName = this.$route.query.activeName
+            if(chooseName != null){
+                this.activeName = chooseName
+                this.selectMenu = chooseName
+            }
             this.userId = getCookie("userId")
             if(this.userId == null || this.userId == ''){
                 this.$router.push("login")
             }
             this.$axios.get('/user-server/user/' + this.userId).then((data)=>{
-                _this.user = data.data.data
-                var sex = _this.user.sex
+                _this.userInfo.user = data.data.data
+                var sex = _this.userInfo.user.sex
                 if(sex == 0){
-                    _this.user.userSex = '保密'
+                    _this.userInfo.userSex = '保密'
                 }else if(sex == 1){
-                    _this.user.userSex = '男'
+                    _this.userInfo.userSex = '男'
                 }else{
-                    _this.user.userSex =  '女'
+                    _this.userInfo.userSex =  '女'
                 }
+                // 将手机号保密设置
+                _this.userInfo.userPhone = _this.userInfo.user.phone.replace(new RegExp("(\\d{3})(\\d{4})(\\d{4})"),"$1****$3")
+                _this.userInfo.userName = _this.userInfo.user.username
+                _this.userInfo.userSignature = _this.userInfo.user.signature
             })
         },
         components:{
@@ -91,18 +105,18 @@
             MyInfo,
             MyAddress,
             MyFooter,
-            UpdatePwd
+            Update
         },
         methods:{
             menuSelect(name){
                 this.selectMenu = name
-                // 如果用户点的是我的地址
-                if(name == 'my-address'){
-                    // 获取用户的地址
-                    this.$axios.get('/user-server/user/address/' + this.userId).then((data)=>{
-                        this.address = data.data.data.slice()
-                    })
-                }
+            }
+        },
+        filters:{
+            mobile(value){
+                let start = value.slice(0, 3)
+                let end = value.slice(-4)
+                return '${start}****${end}'
             }
         }
     }
@@ -118,6 +132,7 @@
     /* 侧边栏 */
     .info-center-menu{
         margin-top: 20px;
+        height: 600px;
         float: left;
     }
     .info-center-content{

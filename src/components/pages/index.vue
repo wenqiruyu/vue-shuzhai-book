@@ -277,7 +277,7 @@
         methods:{
             // 点击分类标签跳转
             clickcategory(id){
-                this.$router.push({path: '/markets', query: { categoryId: id }});
+                this.$router.push({path: '/markets', query: { categoryId: id }})
             }
         }
     }

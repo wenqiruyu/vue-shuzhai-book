@@ -26,40 +26,40 @@
         <div class="cart-hr">
             <hr></hr>
         </div>
-        <div>
-            <!-- 待付款 -->
-            <div>
-                <Divider orientation="left">待付款</Divider>
-                <div>
-
-                </div>
+        <div class="page-center">
+            <!-- 侧边栏 -->
+            <div class="order-center-menu">
+                <Menu active-name="my-info" @on-select="menuSelect">
+                    <MenuItem name="index-order">
+                        <Icon type="md-document" />
+                        全部功能
+                    </MenuItem>
+                    <MenuItem name="my-cart">
+                        <Icon type="md-document" />
+                        我的购物车
+                    </MenuItem>
+                    <MenuItem name="all-order">
+                        <Icon type="md-document" />
+                        订单详情
+                    </MenuItem>
+                    <MenuItem name="end-order">
+                        <Icon type="md-heart" />
+                        已完成订单
+                    </MenuItem>
+                </Menu>
             </div>
-            <!-- 待发货(付款完成的商品) -->
-            <div>
-                <Divider orientation="left">待发货</Divider>
-                <div>
-
+            <div class="order-content">
+                <div v-if="selectMenu == 'end-order'">
+                    <EndOrder></EndOrder>
                 </div>
-            </div>
-            <!-- 运输中 -->
-            <div>
-                <Divider orientation="left">运输中</Divider>
-                <div>
-
+                <div v-else-if="selectMenu == 'not-confirm-order'">
+                    <NotOrder></NotOrder>
                 </div>
-            </div>
-            <!-- 待收货 -->
-            <div>
-                <Divider orientation="left">待收货</Divider>
-                <div>
-
+                <div v-else-if="selectMenu == 'all-order'">
+                    <AllOrder></AllOrder>
                 </div>
-            </div>
-            <!-- 确定收货，已完成的订单 -->
-            <div>
-                <Divider orientation="left">已完成</Divider>
-                <div>
-
+                <div v-else>
+                    <IndexOrder></IndexOrder>
                 </div>
             </div>
         </div>
@@ -72,20 +72,35 @@
 <script>
     import Header from '../common/header'
     import Footer from '../common/footer'
+    import IndexOrder from '../common/order/indexOrder.vue'
+    import AllOrder from '../common/order/allOrder'
+    import NotOrder from '../common/order/notOrder.vue'
+    import EndOrder from '../common/order/endOrder.vue'
     export default {
         components:{
             Header,
-            Footer
+            Footer,
+            IndexOrder,
+            AllOrder,
+            NotOrder,
+            EndOrder
         },
         data(){
             return{
                 // 用户使用搜索框输入的数据
                 value: '',
+                selectMenu: '',
             }
         },
         methods: {
             toIndex(){
                 this.$router.push("index")
+            },
+            menuSelect(name){
+                this.selectMenu = name
+                if(name == 'my-cart'){
+                    this.$router.push("shoppingCart")
+                }
             }
         }
     }
@@ -120,5 +135,20 @@
         margin-bottom: 5px;
         border:none;
         border-top:3px solid  #515A6E;
+    }
+
+    .page-center{
+        margin-top: 60px;
+        height: 900px;
+    }
+    .order-center-menu{
+        float: left;
+        height: 850px;
+        margin-left: 30px;
+    }
+    .order-content{
+        float: left;
+        margin-left: 30px;
+        width: 1120px;
     }
 </style>

@@ -117,9 +117,9 @@
                                         clearCookie("userId")
                                     }
                                     // 用于在路由守卫上使用
-                                    localStorage.setItem("islogin", JSON.stringify(this.formInline));
+                                    localStorage.setItem("islogin", JSON.stringify(this.formInline))
                                     //路由跳转到首页
-                                    this.$router.push('index');
+                                    this.$router.push('index')
                                 } else {
                                     // 提示用户名或密码错误
                                     this.remind = data.data.msg
