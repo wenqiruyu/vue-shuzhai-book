@@ -48,7 +48,7 @@
                 </FormItem>
                 <div style="margin-left: 150px;">
                     <FormItem>
-                        <Button type="primary" size="large" @click="toSave">保存</Button>
+                        <Button type="primary" size="large" @click="toSave">保存修改</Button>
                     </FormItem>
                 </div>
             </Form>

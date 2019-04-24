@@ -45,26 +45,25 @@
                 <div class="order-address">
                     <div class="order-show-address">
                         <!-- 地址列表 -->
-                        <!-- <RadioGroup v-model="label"> -->
-                            <div class="order-address-card" v-for="(item,index) in address">
-                                <!-- <Radio v-bind:label="item.id"> -->
-                                    <div class="order-show-card" :class="{ active:index==isActive }" @click="checkCard(index)">
-                                        <Card>
-                                            <p slot="title">收货人：{{item.consigneeName}}    手机号：{{item.consigneePhone}}</p>
-                                            <p>{{item.detail}}</p>
-                                        </Card>
-                                    </div>
-                                <!-- </Radio> -->
+                        <div v-if="address == null || address.length == 0">
+                            <div style="margin-left: 500px;">
+                                <span style="font-size: 16px;color: #FF0036;font-weight: bold;">你还未设置收货地址哦</span>
                             </div>
-                        <!-- </RadioGroup> -->
+                        </div>
+                        <div v-else class="order-address-card" v-for="(item,index) in address">
+                            <div class="order-show-card" :class="{ active:index==isActive }" @click="checkCard(index)">
+                                <Card style="height: 160px;">
+                                    <p slot="title"><span style="color:#FF0036;">收货人：</span>{{item.consigneeName}} <span style="color:#FF0036;">手机号：</span>{{item.consigneePhone}}</p>
+                                    <p> <span style="color:#FF0036;">地区：</span>{{item.provinces}}</p>
+                                    <p> <span style="color:#FF0036;">详细地址：</span>{{item.detail}}</p>
+                                </Card>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="order-new-address">
-                    <div class="order-new-address-btn">
-                        <Button>使用新地址</Button>
-                    </div>
                     <div class="order-new-address-href">
-                        <a href="">管理收货地址</a>
+                        <a @click="toAddress">管理收货地址</a>
                     </div>
                 </div>
             </div>
@@ -104,7 +103,12 @@
                     <div v-else  style="font-size:14px;">
                         <!-- 收货地址 -->
                         <div class="order-content-pay-address" style="margin-top:8px;">
-                            <span>寄送至：{{chooseAddress.detail}}</span>
+                            <div>
+                                <span>寄送至：{{ chooseAddress.provinces}}</span>
+                            </div>
+                            <div>
+                                <span> {{chooseAddress.detail}}</span>
+                            </div> 
                         </div>
                         <!-- 收货人 -->
                         <div class="order-content-pay-name" style="margin-top:8px;">
@@ -113,10 +117,11 @@
                     </div>
                     <div style="margin-top:8px;">
                         <div style="float: right;"> 
-                            <Button v-on:click="toPay" type="error">提交订单</Button>
+                            <Button v-if="isActive == -1" v-on:click="toPay" type="error" disabled>提交订单</Button>
+                            <Button v-else v-on:click="toPay" type="error">提交订单</Button>
                         </div>
                         <div style="float: right;font-size:16px;margin-top:4px;margin-right:90px;">
-                            <a href=""><Icon type="ios-undo" />返回购物车</a>
+                            <a @click="toCart"><Icon type="ios-undo" />返回购物车</a>
                         </div>
                     </div>
                 </div>
@@ -177,7 +182,7 @@
                                             style:'color:red;'
                                         }
                                     }
-                            },params.row.quantity)
+                            },(params.row.quantity == null ? 1 : params.row.quantity))
                         }
                     },
                     {
@@ -189,10 +194,12 @@
                                 attrs:{
                                     style:'color:red;'
                                 }
-                            },'￥' + money + '元')
+                            },'￥' + (isNaN(money) ? params.row.product.price : money) + '元')
                         }
                     }
                 ],
+                // 用于判断是否立即购买
+                isNowBuy:false,
                 userCart: [],
                 isActive: -1,
                 value:'',
@@ -206,17 +213,6 @@
                     'name':null
                 },
                 currentIndex:null,
-                // address:[{
-                //     'id':'1',
-                //     'consigneeName':'小平安',
-                //     'consigneePhone':'1579734838',
-                //     'detail':'广东省深圳市宝安区西乡街道流塘新村6巷15号B栋'
-                // },{
-                //     'id':'2',
-                //     'consigneeName':'田伯光',
-                //     'consigneePhone':'1579734838',
-                //     'detail':'广东省深圳市宝安区西乡街道流塘新村6巷15号B栋'
-                // }]
                 address: [],
                 // 选中的地址
                 chooseAddress: null,
@@ -236,6 +232,7 @@
             _this.user.name = getCookie('username')
             var product = _this.$route.query.product
             if(product == null){
+                this.isNowBuy = true
                 // 由此判定该页面跳转不是使用购物车进行跳转过来的，是通过直接购买按钮来的，直接购买需要对用户进行是否登录拦截
                 var bookDeail = _this.$route.query.bookDeail
                 // 对直接购买数据进行封装成json
@@ -266,6 +263,9 @@
             })
         },
         methods: {
+            toCart(){
+                this.$router.push('shoppingCart')
+            },
             toIndex(){
                 this.$router.push({path: '/index'});
             },
@@ -273,8 +273,73 @@
                 this.isActive = index
                 this.chooseAddress = JSON.parse(JSON.stringify(this.address[index]))
             },
+            toAddress(){
+                this.$router.push({name: 'info', params: { activeName: 'my-address' }})
+            },
             toPay(){
-
+                // 用户进行付款操作 获取商品信息 收货地址
+                if(this.isNowBuy){
+                    // 立即购买的商品
+                    this.$axios.post('/order-server/order',{
+                        userId: this.user.id,
+                        productId: this.userCart[0].product.id,
+                        addressId: this.chooseAddress.id,
+                        quantity: 1,
+                        orderMoney: this.sumProduct
+                    }).then((data) => {
+                        console.log(data.data)
+                        var data = data.data
+                        if(data.status == 1){
+                            this.$Notice.success({
+                                title: '提示',
+                                desc: '正在跳转支付页面哦'
+                            })
+                            // let routeUrl = this.$router.resolve({
+                            //     path: "/pay",
+                            //     query: { htmls:data.msg }
+                            // })
+                            // window.open(routeUrl .href, '_blank')
+                            const div = document.createElement('div')
+                            div.innerHTML = data.msg //此处form就是后台返回接收到的数据
+                            document.body.appendChild(div)
+                            document.forms[0].submit()
+                        }
+                    })
+                }else{
+                    var cartId = ''
+                    for(var i = 0, len = this.userCart.length; i<len; i++){
+                        if(i == len-1){
+                            cartId += this.userCart[i].id
+                        }else{
+                            // 购物车id
+                            cartId += this.userCart[i].id + ','
+                        }
+                    }
+                    this.$axios.post('/order-server/order',{
+                        userId: this.user.id,
+                        cartId: cartId,
+                        addressId: this.chooseAddress.id,
+                        orderMoney: this.sumProduct
+                    }).then((data) => {
+                        console.log(data.data)
+                        var data = data.data
+                        if(data.status == 1){
+                            this.$Notice.success({
+                                title: '提示',
+                                desc: '正在跳转支付页面哦'
+                            })
+                            // let routeUrl = this.$router.resolve({
+                            //     path: "/pay",
+                            //     query: { htmls:data.msg }
+                            // })
+                            // window.open(routeUrl .href, '_blank')
+                            const div = document.createElement('div')
+                            div.innerHTML = data.msg //此处form就是后台返回接收到的数据
+                            document.body.appendChild(div)
+                            document.forms[0].submit()
+                        }
+                    })
+                }           
             }
         }
     }
@@ -326,7 +391,6 @@
         margin-right: 120px;
         margin-bottom: 30px;
         width: 84%;
-        height: 1050px;
         float: left;
         outline: 4px solid #F9F9F9;
     }
@@ -343,7 +407,6 @@
         color: #999999;
     }
     .order-address{
-        height: 150px;
         width: 1200px;
         clear: both;
         float: left;
@@ -353,7 +416,6 @@
     }
     .order-show-address{
         float: left;
-        height: 150px;
     }
     .order-address-card{
         float: left;
@@ -363,6 +425,9 @@
     }
     .order-show-card{
         float: left;
+        text-align: left;
+        width: 370px;
+        margin-left: 15px;
     }
     .order-new-address{
         margin-top: 5px;
@@ -370,17 +435,15 @@
         float: left;
         width: 95%;
     }
-    .order-new-address-btn{
-        float: left;
-    }
     .order-new-address-href{
+        margin-top: 20px;
         float: right;
         margin-right: 120px;
     }
     .order-content-body-title{
         font-size: 16px;
         float: left;
-        margin-left: 30px;
+        margin-left: 20px;
         margin-top: 30px;
         color: #999999;
     }
@@ -393,7 +456,7 @@
     /* 商品合计 */
     .order-content-moneySum{
         height: 60px;
-        width: 92%;
+        width: 91%;
         margin-top: 3px;
         margin-left: 30px;
         border-radius: 5px;
@@ -407,11 +470,12 @@
         box-shadow: 0 0 0 3px #FF0036;
         /* outline: 2px solid #FF0036; */
         margin-top: 30px;
-        margin-right: 70px;
+        margin-right: 75px;
+        margin-bottom: 20px;
         float: right;
     }
     .order-content-pay-sub{
-        margin: 8px;
+        margin: 15px;
         float:right;
         text-align: right;
     }

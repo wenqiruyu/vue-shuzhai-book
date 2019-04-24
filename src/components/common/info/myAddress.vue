@@ -47,7 +47,7 @@
                         <p>您确定要删除该收货地址嘛？</p>
                     </div>
                 </Modal>
-                <Button @click="addModal = true"><span style="color:#FF0036">添加收货地址</span></Button>
+                <Button @click="addAddress"><span style="color:#FF0036">添加收货地址</span></Button>
             </div>
         </div>
         <div class="address-from">
@@ -259,6 +259,16 @@
             })
         },
         methods: {
+            addAddress(){
+                if(this.userAddress.length >= 6){
+                    this.$Notice.error({
+                        title: '提示',
+                        desc: '收货地址最多只能设置六个哦'
+                    })
+                }else{
+                    this.addModal = true
+                }
+            },
             getAddress(){
                 this.$axios.get('/user-server/user/address/' + this.userId).then((data)=>{
                     this.userAddress = data.data.data.slice()
@@ -411,7 +421,6 @@
                     })
                     this.getAddress()
                 }
-                // this.$router.push({name: 'info', params: { activeName: 'my-address' }})
             },
             updateAddress(){
                 this.updateAddressArry = this.userAddress[this.chooseActive]
@@ -482,7 +491,7 @@
         float: left;
         width: 100%;
         text-align: left;
-        margin-top: 40px;
+        margin-top: 20px;
     }
     .address-not{
         float: left;

@@ -46,7 +46,8 @@
                     <!-- 主图展示 需要在主图上添加一个放大镜的效果 -->
                     <div class="detail-sub-img" v-for="(img,index) in book_subImg">
                         <div v-if="index==img_index" style="width:320px;height:320px;">
-                            <img v-bind:src="img" alt="图片被怪物吃掉啦" width="316px" height="316px">
+                            <pic-zoom v-bind:url="img" :scale="scale" scroll alt="图片被怪物吃掉啦"></pic-zoom>
+                            <!-- <img v-bind:src="img" alt="图片被怪物吃掉啦" width="316px" height="316px"> -->
                         </div>
                     </div>
                     <!-- 缩略图展示  -->
@@ -91,8 +92,7 @@
                     <!-- 评分 评论数 -->
                     <div class="detail-book-grade-all">
                         <div class="detail-book-grade">
-                            <Rate show-text allow-half disabled v-bind:value="book.grade">
-                                <span style="color: #f5a623;font-size:14px">{{book.grade}}</span>
+                            <Rate allow-half disabled v-bind:value="book.grade">
                             </Rate>
                             <span style="color: #f5a623;font-size:14px">{{book.grade}}评分</span>
                         </div>
@@ -151,8 +151,76 @@
 
             </div>
             <!-- 商品详情 详细参数信息 -->
-            <div>
+            <div class="page-footer">
+                <div class="book-menu">
+                    <Menu mode="horizontal" :active-name="activeName" @on-select="menuSelect">
+                       <MenuItem name="book-detail">
+                            商品详情
+                        </MenuItem>
+                        <MenuItem name="book-garde">
+                            商品评论
+                        </MenuItem>
+                    </Menu>
+                </div>
+                <div>
+                    <hr class="menu-hr"></hr>
+                </div>
+                <!-- 商品详情 -->
+                <div v-if="selectMenu == 'book-detail'">
+                    <div>
+                        开本：16开 纸张：轻型纸 包装：平装-胶订
+                        是否套装：是    国际标准书号ISBN：9787531579427
+                    </div>
+                    <div>
+                        <!-- 产品特色 -->
+                        <!-- 编辑推荐 -->
+                        <!-- 内容简介 -->
+                        <!-- 作者简介 -->
+                        <!-- 目录 -->
+                        <!-- 前言 -->
+                    </div>
+                </div>
+                <!-- 商品评论 -->
+                <div v-else style="margin-top: 30px;">
+                    <div v-if="allGarde == null || allGarde.length == 0">
+                        <span>
+                            该图书还没有评论哟，快来抢沙发吧！
+                        </span>
+                    </div>
+                    <div v-else>
+                        <div v-for="(item,index) in allGarde">
+                            <div style="float: left;margin-left: 120px;">
+                                <!-- 头像 -->
+                                <div>
+                                    <img style="width: 60px;height:60px;display: inline-block;border-radius: 50%;line-height: 100px;" 
+                                    v-bind:src="item.user.face" alt="图片被怪物吃掉啦">
+                                </div>
+                                <!-- 用户名 -->
+                                <div>
+                                    <span>{{item.user.username}}</span>
+                                </div>
+                                <!-- 发布评论日期 -->
+                                <div>
+                                    <span>{{item.user.createTime}}</span>
+                                </div>
+                            </div>
+                            <!-- 评论具体内容 -->
+                            <div>
+                                <span>{{item.detail}}</span>
+                            </div>
+                            <!-- 点赞 -->
 
+                            <!-- 评中评 -->
+                        </div>
+                    </div>
+                    <!-- 发表评论 -->
+                    <div>
+                        <!-- 输入框 -->
+                        <Input v-model="detail" type="textarea" :rows="4" placeholder="Enter something..." />
+                        <!-- 按钮 -->
+                        <Button @click="addComment">发布</Button>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- 页面尾部信息 -->
@@ -168,46 +236,27 @@
     import CommonFooter from '../common/footer'
     import IndexHeader from '../common/index/indexHeader'
     import IndexMenu from '../common/index/indexMenu'
+    import PicZoom from 'vue-piczoom'
     export default {
         components:{
             CommonHeader,
             CommonFooter,
             IndexHeader,
-            IndexMenu
+            IndexMenu,
+            PicZoom
         },
         data(){
             return{
-                book:{
-                    author: null,
-                    commentNum: 0,
-                    detail: null,
-                    // 评分
-                    grade: 0,
-                    id: null,
-                    // 主图
-                    mainImg: null,
-                    name: null,
-                    // 出版社
-                    press: null,
-                    // 价格
-                    price: null,
-                    // 定价
-                    pricing: null,
-                    // 出版时间
-                    publishDate: null,
-                    // 出售数量
-                    sale: null,
-                    // 数量
-                    stock: null,
-                    // 附图
-                    subImg: null,
-                    // 是否热卖 热卖4
-                    status: null,
-                    // 缩略图
-                    thumbnail: null,
-                    subtitle: null,
-                },
-                user:{'id':null,'name':null},
+                detail: '',
+                activeName: 'book-detail',
+                selectMenu: 'book-detail',
+                // 主图放大镜效果
+                scale: 2,
+                book:{},
+                // 图书所有评论
+                allGarde: null,
+                user:{'id':'','name':''},
+                bookId: '',
                 isActive: 0,
                 book_subImg: [],
                 book_thumbnail: [],
@@ -217,6 +266,25 @@
             }
         },
         methods:{
+            menuSelect(name){
+                this.selectMenu = name
+                if(name == 'book-garde'){
+                    // 查询商品下的所有评论
+                    this.$axios.get('/product-server/product/comment/' + this.bookId).then((res) => {
+                        var data = res.data
+                        if(data.status == 1){
+                            if(res.data.data.length != 0){
+                                this.allGarde = res.data.data
+                            }
+                        }else{
+                            this.$Notice.error({
+                                title: '提示',
+                                desc: data.msg
+                            });
+                        }
+                    })
+                }
+            },
             showSubImg(index){
                 this.img_index = index
                 this.isActive = index
@@ -225,9 +293,12 @@
             toCart(bookId){
                 var _this = this;
                 this.$axios.post('/cart-server/cart',{
-                    userId:_this.user.id,
+                    userId:this.user.id,
                     bookId:bookId,
-                    bookNum:_this.buyNum
+                    bookNum:this.buyNum,
+                    bookName: this.book.name,
+                    author: this.book.author,
+                    price: this.book.price
                 }).then((data)=>{
                     var data = data.data
                     if(data.status == 1){
@@ -246,6 +317,26 @@
             // 点击立即购买
             clickPay(id){
                 this.$router.push({path: '/confirmOrder', query: { bookDeail: JSON.stringify(this.book) }})
+            },
+            addComment(){
+                const params = new URLSearchParams()
+                params.append('userId', this.user.id)
+                params.append('productId', this.bookId)
+                params.append('detail', this.detail)
+                this.$axios.post('/product-server/product/comment', params).then((res)=>{
+                    var data = res.data
+                    if(data.status == 1){
+                    this.$Notice.success({
+                            title: '提示',
+                            desc: data.msg
+                        });
+                    }else{
+                        this.$Notice.error({
+                            title: '提示',
+                            desc: data.msg
+                        });
+                    }
+                })
             }
         },
         created(){
@@ -254,9 +345,9 @@
             _this.user.id = getCookie('userId')
             _this.user.name = getCookie('username')
             // 获取图书id
-            var bookId = this.$route.query.bookId
+             this.bookId = this.$route.query.bookId
             // 根据图书id查询图书详情
-            _this.$axios.get('/product-server/product/' + bookId).then((data)=>{
+            _this.$axios.get('/product-server/product/' + this.bookId).then((data)=>{
                 _this.book = data.data.data
                 _this.book.status = 4
                 _this.book_subImg = _this.book.subImg.split(',')
@@ -283,8 +374,6 @@
         clear: both;
         height: 1200px;
         margin: 30px;
-        border-style: solid;
-        border-width: 1px;
     }
     .book-detail{
         clear: both;
@@ -297,6 +386,7 @@
         margin-left: 90px;
         margin-top: 20px;
         clear: both;
+
     }
     /* 主图 */
     .detail-sub-img{
@@ -455,6 +545,20 @@
     .detail-book-button{
         margin-top: 20px;
         float: left;
+    }
+    .page-footer{
+        float: left;
+        width: 97%;
+    }
+    .book-menu{
+        margin-top: 60px;
+        margin-left: 85px;
+    }
+    .menu-hr{
+        margin-left: 85px;
+        margin-bottom: 15px;
+        border:none;
+        border-top:1px solid  #D9D9D9;
     }
     .active{
         border: 2px solid #F1F3F4;

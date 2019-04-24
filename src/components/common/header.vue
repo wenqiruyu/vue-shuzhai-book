@@ -43,13 +43,15 @@
                 username: null,
                 remindExit: false,
                 modal_loading: false,
-                formInline: false
+                formInline: false,
+                token: null
             }
         },
         created(){
             // 获取cookie
             this.username = getCookie("username")
             this.id = getCookie("userId")
+            this.token = getCookie("login-token")
         },
         methods:{
             toInfo(){
@@ -59,6 +61,14 @@
                 // 删除cookie
                 clearCookie("username")
                 clearCookie("userId")
+                clearCookie("login-token")
+                this.$axios.delete('/user-server/user',{
+                    params: {
+                        token: this.token
+                    }
+                }).then((res) => {
+                    console.log(res)
+                })
                 localStorage.setItem("islogin", JSON.stringify(this.formInline))
                 // 路由跳转登录页面
                 this.$router.push('login')

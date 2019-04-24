@@ -3,6 +3,9 @@
         <div class="info-header">
             <Header></Header>
         </div>
+        <div class="info-login-header">
+            <LoginHeader></LoginHeader>
+        </div>
         <div class="info-center">
             <!-- 侧边栏 -->
             <div class="info-center-menu">
@@ -27,7 +30,7 @@
             </div>
             <div class="info-center-content">
                 <div v-if="selectMenu == 'update-pwd'">
-                    <Update :userInfo="userInfo"></Update>
+                    <Update :userInfo="userInfo" :userId="userId"></Update>
                 </div>
                 <div v-else-if="selectMenu == 'my-address'">
                     <MyAddress :userId="userId"></MyAddress>
@@ -49,6 +52,7 @@
 
 <script>
     import Header from '../common/header'
+    import LoginHeader from '../common/login/loginHeader.vue'
     import Footer from '../common/footer'
     import MyInfo from '../common/info/myInfo'
     import MyAddress from '../common/info/myAddress'
@@ -74,7 +78,7 @@
         created(){
             var _this = this
             // 跳转到指定选项
-            var chooseName = this.$route.query.activeName
+            var chooseName = this.$route.params.activeName
             if(chooseName != null){
                 this.activeName = chooseName
                 this.selectMenu = chooseName
@@ -101,6 +105,7 @@
         },
         components:{
             Header,
+            LoginHeader,
             Footer,
             MyInfo,
             MyAddress,
@@ -123,15 +128,16 @@
 </script>
 
 <style scoped>
+    .info-login-header{
+        margin-top: 50px;
+    }
     .info-center{
-        margin-top: 20px;
         margin-bottom: 20px;
         height: 600px;
         clear: both;
     }
     /* 侧边栏 */
     .info-center-menu{
-        margin-top: 20px;
         height: 600px;
         float: left;
     }

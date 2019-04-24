@@ -74,6 +74,7 @@
     import LoginHeader from "../common/login/loginHeader";
     import LoginFooter from "../common/login/loginFooter";
     import {setCookie, clearCookie} from '../../assets/js/cookie.js'
+import { constants } from 'fs';
     export default {
         components:{
             LoginHeader,
@@ -103,29 +104,53 @@
             login(name){
                 this.$refs[name].validate((valid) => {
                     if (valid) {
-                        this.$axios.post('/user-server/user/login',this.user).then((data) => {
+                        var token = null
+                        var isSetCookie = false
+                        const params = new URLSearchParams()
+                        params.append('username', this.user.username)
+                        params.append('password', this.user.password)
+                        // this.$axios.post('/user-server/user/login', params, {crossDomain:true,withCredentials:true})
+                        this.$axios.post('/user-server/user/login', params).then((data) => {
+                            token = data.data.data
+                            console.log(token)
                             var status = data.data.status
-                                if(status == 1) {
-                                    var username = this.user.username
-                                    var userId = data.data.data.id
-                                    // 登录成功，存储cookie 设置三天时效
-                                    if(this.single){
-                                        setCookie("username",username,3)
-                                        setCookie("userId",userId,3)
-                                    }else{
-                                        clearCookie("username")
-                                        clearCookie("userId")
-                                    }
-                                    // 用于在路由守卫上使用
-                                    localStorage.setItem("islogin", JSON.stringify(this.formInline))
-                                    //路由跳转到首页
-                                    this.$router.push('index')
-                                } else {
-                                    // 提示用户名或密码错误
-                                    this.remind = data.data.msg
+                            if(status == 1) {
+                                // 获取cookie
+                                if(token != ''){
+                                    // 根据sessionId查询缓存中的用户信息
+                                    console.log("jashudasudhuash")
+                                    this.$axios.get('/user-server/user/info',{
+                                        params: {
+                                            token: token
+                                        }
+                                    }).then((res) => {
+                                        var usr = res.data.data
+                                        var status = res.data.status
+                                        if(status == 1){
+                                            if(this.single){
+                                                setCookie("login-token", data.data.data, 3)
+                                                setCookie("username", usr.username, 3)
+                                                setCookie("userId", usr.id, 3)
+                                            }else{
+                                                console.log("0000000000000")
+                                                document.cookie = "login-token" + "=" + token + "; "
+                                                document.cookie = "username" + "=" + usr.username + "; "
+                                                document.cookie = "userId" + "=" + usr.id + "; "
+                                            }
+                                            // 用于在路由守卫上使用
+                                            localStorage.setItem("islogin", JSON.stringify(this.formInline))
+                                            //路由跳转到首页
+                                            window.location.href = "/index"
+                                            // this.$router.push('index')
+                                        }
+                                    })
+                                }else{
+
                                 }
-                            }).catch((error) => {
-                                this.remind = '系统错误，请稍后再试'
+                            } else {
+                                // 提示用户名或密码错误
+                                this.remind = data.data.msg
+                            }
                         })
                     }
                 })

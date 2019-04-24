@@ -14,6 +14,7 @@ Vue.use(iView);
 
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8';
 axios.defaults.baseURL = 'http://localhost:9996'
+// axios.defaults.withCredentials = true
 // 将API方法绑定到全局
 Vue.prototype.$axios = axios
 // Vue.prototype.$restful = restful

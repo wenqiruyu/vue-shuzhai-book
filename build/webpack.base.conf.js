@@ -22,6 +22,10 @@ module.exports = {
       ? config.build.assetsPublicPath
       : config.dev.assetsPublicPath
   },
+  // 新加的
+  devServer: {
+    disableHostCheck: true,
+  },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {

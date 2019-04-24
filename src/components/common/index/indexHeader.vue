@@ -12,8 +12,8 @@
         <!-- 搜索框 -->
         <div class="page-header-search">
             <div>
-                <Input v-model="value" placeholder="请输入关键字" style="width: 300px" />
-                <Button type="primary" icon="ios-search">搜索</Button>
+                <Input v-model="searchValue" placeholder="请输入关键字" style="width: 300px" />
+                <Button @click="toSearch" type="primary" icon="ios-search">搜索</Button>
             </div>
             <div class="page-header-search-hot">
                 <span>热搜：</span>
@@ -39,7 +39,7 @@
     export default {
         data(){
             return{
-                value: '',
+                searchValue: '',
                 num: 0,
                 name: null,
                 // 热搜
@@ -55,17 +55,24 @@
             var userId = getCookie('userId')
             var username = getCookie('username')
             _this.name = username
+            // 根据cookie中用户名查询用户的购物车数
             if(!(userId == '' || userId == null)){
                 this.$axios.get('/cart-server/cart/sum/' + userId).then((data)=>{
                     _this.num = data.data.data
                 })
             }
-            // 根据cookie中用户名查询用户的购物车数
         },
         methods:{
             // 点击图标跳转主页 后期考虑cookie是否需要传用户信息
             toIndex(){
                 this.$router.push({path: '/index'});
+            },
+            toSearch(){
+                if(this.searchValue == null || this.searchValue == ''){
+                    this.$router.push({name: 'search'})
+                }else{
+                    this.$router.push({path: '/search',query: {search : this.searchValue}})
+                }
             }
         }
     }

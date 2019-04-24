@@ -33,15 +33,22 @@
                     <span>我的物流</span>
                 </div>
             </div>
-            <div class="content-detail">
+            <div class="content-detail"  v-for="item in book">
                 <Collapse v-model="value">
                     <Panel name="1" hide-arrow>
                         <div style="float: left;">
-                            <span>2019.05.30</span>
+                            <!-- 订单创建时间 -->
+                            <span>{{ item.rankTime }}</span>
                         </div>
                         <div slot="content">
-                            <p>史蒂夫·乔布斯（Steve Jobs），1955年2月24日生于美国加利福尼亚州旧金山，美国发明家、企业家、美国苹果公司联合创办人。</p>
-                            <Button>确定收货</Button>
+                            <!-- 订单列表 -->
+                            <div>
+                                <Table ref="selection" :columns="columns" :data="item.order" @on-selection-change="selectRow">
+                                    <template slot-scope="{ row, index }" slot="action">
+                                        <Button @click="remindDel = true,removeIndex = index">确定收货</Button>
+                                    </template>
+                                </Table>
+                            </div>
                         </div>
                     </Panel>
                 </Collapse>
@@ -54,14 +61,104 @@
     export default {
         data(){
             return{
-                value: [1,2]
+                value: [1,2],
+                userCart: [],
+                order: [],
+                book: [],
+                allRankTime: [],
+                columns:[
+                    {
+                        title: '商品信息',
+                        width: 600,
+                        render: (h, params) => {
+                            let allBook = params.row.product
+                            let allSrc = ''
+                            let allTit = ''
+                            for(let i = 0, len = allBook.length; i<len; i++){
+                                allSrc += params.row.product[i].mainImg
+                                allTit += params.row.product[i].name
+                            }
+                            return h('div', [
+                                h('img', {
+                                    attrs: {
+                                        
+                                    }
+                                }),
+                                h('div',{
+                                    attrs:{
+                                        style:'color:#31708f;float:left;margin-left:45px;margin-top:15px;margin-bottom:15px;height:90px;width:460px;overflow:hidden;text-overflow:ellipsis '
+                                    }
+                                },allTit)
+                            ]);
+                        }
+                    },
+                    {
+                        title: '数量',
+                        render: (h, params)=>{
+                            return h('div',[
+                                h('span',{
+                                    attrs:{
+                                        style:'color:red;'
+                                    }
+                                },'￥' +  + '元')
+                            ])
+                        }
+                    },
+                    {
+                        title: '金额',
+                        render: (h, params)=>{
+                            let money = params.row.orderMoney.toFixed(2)
+                            return h('span',{
+                                attrs:{
+                                    style:'color:red;'
+                                }
+                            },'￥' + money + '元')
+                        }
+                    },
+                    {
+                        title: '操作',
+                        type: 'action',
+                        slot: 'action'
+                    }
+                ]
             }
         },
         props:{
-
+            userId: String,
+            requierd: true
+        },
+        created(){
+            this.$axios.get('/order-server/order/group/' + this.userId).then((res) => {
+                if(res.data.status == 1){
+                    this.order = res.data.data
+                    var len = this.order.length
+                    for(var i = 0; i<len; i++){
+                        if(i == 0){
+                            this.allRankTime.push(this.order[i].rankTime)
+                        }else if(this.order[i].rankTime != this.order[i-1].rankTime){
+                            this.allRankTime.push(this.order[i].rankTime)
+                        }
+                    }
+                    for(var j = 0, tLen = this.allRankTime.length; j<tLen; j++){
+                        var rank = []
+                        for(var k = 0, oLen = this.order.length; k<oLen; k++){
+                            if(this.allRankTime[j] == this.order[k].rankTime){
+                                var str = {"orderMoney":this.order[k].orderMoney,"product":this.order[k].product}
+                                rank.push(str)
+                            }
+                        }
+                        var result = {"rankTime":this.allRankTime[j],"order":rank}
+                        this.book.push(result)
+                    }
+                    console.log(this.book)
+                }
+            })
         },
         methods: {
             toAddress(){
+                this.$router.push({name: 'info', params: { activeName: 'my-address' }})
+            },
+            selectRow(){
 
             }
         }

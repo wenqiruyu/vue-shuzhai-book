@@ -349,7 +349,9 @@
                 }).then((data)=>{
                     var data = data.data
                     // 删除成功
-                    if(data.status = 1){
+                    if(data.status == 1){
+                        this.bookNum = 0
+                        this.priceNum = 0
                         // 根据id进行批量删除
                         var removeAllIndex = []
                         for(var i = 0, len = arr.length; i < len; i++){

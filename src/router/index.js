@@ -10,6 +10,9 @@ import Markets from '@/components/pages/markets'
 import ConfirmOrder from '@/components/pages/confirmOrder'
 import Info from '@/components/pages/info'
 import Order from '@/components/pages/order'
+import Pay from '@/components/pages/pay'
+import Search from '@/components/pages/search'
+import PaySuccess from '@/components/pages/paySuccess'
 import Text from '@/components/pages/text'
 Vue.use(Router)
 
@@ -29,11 +32,6 @@ export default new Router({
     {
       path: '/login',
       name: 'login',
-      component: Login
-    },
-    {
-      path: '/login',
-      name: 'toLogin',
       component: Login
     },
     {
@@ -71,12 +69,30 @@ export default new Router({
       name: 'order',
       component: Order
     },
+    {
+      path: '/pay',
+      // 开启路由守卫
+      meta: { requireAuth: true },
+      name: 'pay',
+      component: Pay
+    },
+    {
+      path: '/paySuccess',
+      // 开启路由守卫
+      name: 'paySuccess',
+      component: PaySuccess
+    },
     { 
       path: '/info',
       // 开启路由守卫
       meta: { requireAuth: true },
       name: 'info',
       component: Info
+    },
+    {
+      path: '/search',
+      name: 'search',
+      component: Search
     },
     {
       path: '*',

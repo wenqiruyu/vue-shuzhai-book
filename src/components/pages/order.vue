@@ -59,7 +59,7 @@
                     <AllOrder></AllOrder>
                 </div>
                 <div v-else>
-                    <IndexOrder></IndexOrder>
+                    <IndexOrder :userId="userId"></IndexOrder>
                 </div>
             </div>
         </div>
@@ -76,6 +76,7 @@
     import AllOrder from '../common/order/allOrder'
     import NotOrder from '../common/order/notOrder.vue'
     import EndOrder from '../common/order/endOrder.vue'
+    import {setCookie,getCookie,clearCookie} from '../../assets/js/cookie.js'
     export default {
         components:{
             Header,
@@ -88,9 +89,13 @@
         data(){
             return{
                 // 用户使用搜索框输入的数据
+                userId: null,
                 value: '',
                 selectMenu: '',
             }
+        },
+        created(){
+            this.userId = getCookie("userId")
         },
         methods: {
             toIndex(){

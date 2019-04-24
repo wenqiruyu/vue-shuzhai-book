@@ -206,8 +206,12 @@
                     }
                 })
             },
+            toLogin(){
+                this.$router.push({path: '/login'})
+            },
             handleSubmit(name){
-                var self =  this
+                var self = this
+                this.remindMsg = ''
                 this.$refs[name].validate((valid) => {
                     if (valid) {
                         // 验证用户名是否存在
@@ -225,23 +229,19 @@
                                     verify: this.user.verify
                                 }).then((data) => {
                                     var data = data.data
-                                    console.log(data)
-                                        if(data.status == 1) {
-                                            console.log("我要跳走了")
-                                            //路由跳转
-                                            self.$router.push('login')
-                                        } else {
-                                            this.remindMsg='* ' + data.msg
-                                        }
-                                    }).catch((error) => {
-                                        this.remindMsg = '系统错误，请稍后再试'
+                                    if(data.status == 1) {
+                                        //路由跳转
+                                        // self.$router.push({path: '/login'})
+                                        window.location.href = "/login"
+                                    } else {
+                                        this.remindMsg='* ' + data.msg
+                                    }
                                 })
                             }else{
                                 this.remindName = true
                                 this.$refs.user.validateField('username')
                             }
                         })
-                        
                     }
                 })
             }
